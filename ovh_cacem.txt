@@ -1,0 +1,53 @@
+Application Name
+traefikdnschallenge
+Application Description
+Traefik DNS Challenge
+Application Key
+D5AeF7GMx7cfs1z4
+Application Secret
+9jXD4E3s3ll6IA1JvoW14bDytMrH0g6R
+consumerkey
+0dbab03d8b9fb28971e4b845e4437de5
+credentialToken=9e2b9f8d8371ac5be5239832e813f4413dd1a031446e77e5d58114c11cb15bb3
+curl -XPOST -H "X-Ovh-Application: D5AeF7GMx7cfs1z4" -H "Content-type: application/json" https://eu.api.ovh.com/1.0/auth/credential -d '{
+	"accessRules":[
+		{
+			"method":"POST",
+			"path":"/domain/zone/*/record"
+		},
+		{
+			"method":"POST",
+			"path":"/domain/zone/*/refresh"
+		},
+		{
+			"method":"DELETE",
+			"path":"/domain/zone/*/record/*"
+		}
+	],
+	"redirection":"https://www.*"
+}'
+curl -XPOST -H "X-Ovh-Application: D5AeF7GMx7cfs1z4" -H "Content-type: application/json" https://eu.api.ovh.com/1.0/auth/credential -d '{"accessRules":[{"method":"POST","path":"/domain/zone/*/record"},{"method":"POST","path":"/domain/zone/*/refresh"},{"method":"DELETE","path":"/domain/zone/*/record/*"}], "redirection": "https://www.*"}'
+
+certbot certonly --email admindsi@cacem.fr --dns-ovh --dns-ovh-credentials /root/.ovh-credentials --dns-ovh-propagation-seconds 60 --preferred-challenges dns --register  -d portainer.cacem.fr
+
+
+
+ 	SSLEngine on
+        #SSLOptions +StrictRequire
+        SSLProtocol all
+        #SSLCipherSuite HIGH
+
+        # certificats
+        SSLCertificateFile /etc/letsencrypt/live/portainer.cacem.fr/cert.pem
+        SSLCertificateKeyFile /etc/letsencrypt/live/portainer.cacem.fr/privkey.pem
+        SSLCertificateChainFile /etc/letsencrypt/live/portainer.cacem.fr/chain.pem
+
+
+docker run -d -p 9443:9443 -p 8000:8000 --name portainer --restart always  -v /var/run/docker.sock:/var/run/docker.sock  -v portainer-data:/data -v /etc/letsencrypt/live/portainer.cacem.fr:/certs/live/portainer.cacem.fr:ro -v /etc/letsencrypt/archive/portainer.cacem.fr:/certs/archive/portainer.cacem.fr:ro  portainer/portainer-ce:2.9.3 --sslcert /certs/live/portainer.cacem.fr/cert.pem --sslkey /certs/live/portainer.cacem.fr/privkey.pem
+
+
+
+
+
+
+{"consumerKey":"0dbab03d8b9fb28971e4b845e4437de5","validationUrl":"https://www.ovh.com/auth/sso/api?credentialToken=9e2b9f8d8371ac5be5239832e813f4413dd1a031446e77e5d58114c11cb15bb3","state":"pendingValidation"}

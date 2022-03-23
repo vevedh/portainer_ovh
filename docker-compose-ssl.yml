@@ -1,0 +1,50 @@
+version: '3.3'
+services:
+  traefik:
+    image: traefik:v2.6
+    container_name: "portainer_traefik"
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.file.directory=/etc/traefik/dynamic_conf
+    networks:
+      - proxy
+    ports:
+      - '6080:80'
+      - '6443:443'
+    volumes:
+      - ./tools/traefik/config.yml:/etc/traefik/dynamic_conf/conf.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+  portainer:
+    image: portainer/portainer-ce:2.9.3
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 8000:8000
+      - 9443:9443
+    networks:
+      - proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    labels:
+      - traefik.http.middlewares.portainer_https.redirectscheme.scheme=https
+      - traefik.http.routers.portainer.entrypoints=web
+      - traefik.http.routers.portainer.rule=Host(`portainer.cacem.fr`)
+      - traefik.http.routers.portainer.middlewares=portainer_https@docker
+      - traefik.http.routers.portainer_https.rule=Host(`portainer.cacem.fr`)
+      - traefik.http.routers.portainer_https.tls=true
+      - traefik.http.routers.portainer_https.entrypoints=websecure
+   
+
+volumes:
+  portainer_data:
+networks:
+  proxy:
+    external: true
